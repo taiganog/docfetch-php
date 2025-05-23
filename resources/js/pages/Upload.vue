@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+// Inertia
+import { Head, useForm } from '@inertiajs/vue3';
+
+// TS
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
+
+// Vue/UI
+import AppLayout from '@/layouts/AppLayout.vue';
+import CardPequeno from '@/components/CardPequeno.vue';
+import { Input, Select, DragAndDrop } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { computed } from 'vue';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,6 +20,43 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/upload',
     },
 ];
+
+defineProps<{
+    status?: string;
+    canResetPassword: boolean;
+}>();
+
+const form = useForm({
+    categoria: '',
+    categoria_nova: '',
+    destinatario: '',
+    destinatario_novo: '',
+});
+
+const submit = () => {
+    form.post(route('store'), {
+        preserveScroll: true,
+        onSuccess: () => 1,
+        onError: () => 1,
+        onFinish: () => form.reset(),
+    });
+};
+
+const criarNovaCategoria = computed(() => {
+    return form.categoria_nova.length > 0;
+});
+
+const criarNovoDestinatario = computed(() => {
+    return form.destinatario_novo.length > 0;
+})
+
+function limparCategoria(attr: string) {
+    if (attr == 'categoria') {
+        form.categoria = '';
+    } else if (attr == 'destinatario') {
+        form.destinatario = '';
+    }
+}
 </script>
 
 <template>
@@ -18,18 +65,51 @@ const breadcrumbs: BreadcrumbItem[] = [
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-            </div>
-            <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
-                <PlaceholderPattern />
+                <CardPequeno titulo="Categoria">
+                    <Label for="categoria">Selecione uma das categorias</Label>
+                    <Select id="categoria" 
+                            v-model="form.categoria"
+                            :disabled="criarNovaCategoria">
+                        <option value='cultura'>Cultura</option>
+                        <option value='infraestrutura'>Infraestrutura</option>
+                        <option value='saude'>Saúde</option>
+                    </Select>
+
+                    <Separator class="my-4"/>
+
+                    <Label for="categoria_nova">Ou crie uma nova</Label>
+                    <Input id="categoria_nova"
+                           type="text"
+                           @change="limparCategoria('categoria')"
+                           v-model="form.categoria_nova"
+                           :tabindex="1"
+                           placeholder="Digite aqui"/>
+                </CardPequeno>
+
+                <CardPequeno titulo="Destinatário">
+                    <Label for="destinatario">Selecione um destinatário</Label>
+                    <Select id="destinatario" 
+                            v-model="form.destinatario"
+                            :disabled="criarNovoDestinatario">
+                        <option value='gov'>Governador</option>
+                        <option value='vice-gov'>Vice Governador</option>
+                        <option value='prefeito'>Prefeito</option>
+                    </Select>
+
+                    <Separator class="my-4"/>
+
+                    <Label for="destinatario_novo">Ou crie uma nova</Label>
+                    <Input id="destinatario_novo"
+                           type="text"
+                           @change="limparCategoria('destinatario')"
+                           v-model="form.destinatario_novo"
+                           :tabindex="1"
+                           placeholder="Digite aqui"/>
+                </CardPequeno>
+
+                <CardPequeno titulo="Arquivo" >
+                    <DragAndDrop :size_svg="100"/>
+                </CardPequeno>
             </div>
         </div>
     </AppLayout>
