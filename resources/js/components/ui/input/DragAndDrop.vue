@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, type HTMLAttributes } from 'vue'
+import { computed, ref, type HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
 import { useVModel } from '@vueuse/core'
 import { SquareDashedMousePointer } from 'lucide-vue-next';
 import SubText from '@/components/SubText.vue';
+
+import { Image, FilePenLine, Video, Trash } from 'lucide-vue-next';
 
 const props = defineProps<{
   defaultValue?: string | number
@@ -14,6 +16,7 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   (e: 'update:modelValue', payload: string | number): void
+  (e: 'files-selected', files: FileList[]): void;
 }>();
 
 const modelValue = useVModel(props, 'modelValue', emits, {
@@ -22,10 +25,10 @@ const modelValue = useVModel(props, 'modelValue', emits, {
 });
 
 const isDragging = ref(false);
-const file = ref(null);
+const file = ref({ files: ref<FileList[]>([]) });
 const documents = ref<any[]>([]);
 
-function dragover(e: any) {
+function dragover(e: Event) {
     e.preventDefault();
     isDragging.value = true;
 }
@@ -36,15 +39,20 @@ function dragleave() {
 
 function drop(e: any) {
     e.preventDefault();
-    file.value = e.dataTransfer.files;
+    file.value.files = e.dataTransfer.files;
     onChange();
     isDragging.value = false;
 }
 
 function onChange() {
     if (file.value) {
-        documents.value.push(file.value[0]);
+        documents.value.push(file.value.files[0]);
+        emits('files-selected', documents.value);
     }
+}
+
+function removeFile(index: number) {
+    documents.value.splice(index, 1);
 }
 
 </script>
@@ -64,7 +72,7 @@ function onChange() {
             id="fileInput"
             class="hidden-input"
             style="color:transparent; height: 0px;"
-            @change="onChange()"
+            @change="onChange"
             ref="file"
         />
 
@@ -73,5 +81,17 @@ function onChange() {
         </label>
 
         <SubText>Arraste ou clique no ícone</SubText>
+
+        <div v-if="documents.length > 0">
+            <div v-for="(documento, index) in documents" class="flex flex-row justify-between">
+                <div class="text-center">
+                    <Image v-if="documento.type.includes('image')" />
+                    <FilePenLine v-if="documento.type.includes('text')" />
+                    <Video v-if="documento.type.includes('video')" />
+                </div>
+                <SubText color="text-white">{{ documento.name }}</SubText>
+                <Trash color="#ed333b" class="cursor-pointer" @click="removeFile(index)" />
+            </div>
+        </div>
     </div>
 </template>

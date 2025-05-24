@@ -21,16 +21,25 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+interface FormData {
+    categoria: string,
+    categoria_nova: string,
+    destinatario: string,
+    destinatario_novo: string,
+    documentos: FileList[]
+}
+
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
 
-const form = useForm({
+const form = useForm<FormData>({
     categoria: '',
     categoria_nova: '',
     destinatario: '',
     destinatario_novo: '',
+    documentos: [],
 });
 
 const submit = () => {
@@ -56,6 +65,10 @@ function limparCategoria(attr: string) {
     } else if (attr == 'destinatario') {
         form.destinatario = '';
     }
+}
+
+function setDocumentos(files: FileList[]) {
+    form.documentos = files;
 }
 </script>
 
@@ -107,10 +120,18 @@ function limparCategoria(attr: string) {
                            placeholder="Digite aqui"/>
                 </CardPequeno>
 
-                <CardPequeno titulo="Arquivo" >
-                    <DragAndDrop :size_svg="100"/>
+                <CardPequeno titulo="Arquivo" class="md:row-span-2">
+                    <DragAndDrop @files-selected="setDocumentos" :size_svg="100"/>
                 </CardPequeno>
+                
+                <CardPequeno formato="linha" class="col-span-2" titulo="Arquivo" >
+                    <div class="text-center">
+                        <p>Amo muito minha esposa</p>
+                    </div>
+                </CardPequeno>
+
             </div>
+
         </div>
     </AppLayout>
 </template>
