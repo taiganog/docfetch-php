@@ -124,7 +124,7 @@ function setDocumentos(files: FileList[]) {
                     <DragAndDrop @files-selected="setDocumentos" :size_svg="100"/>
                 </CardPequeno>
                 
-                <CardPequeno formato="linha" class="col-span-2" titulo="Arquivo" >
+                <CardPequeno formato="linha" class="md:col-span-2" titulo="Arquivo" >
                     <div class="text-center">
                         <p>Amo muito minha esposa</p>
                     </div>
